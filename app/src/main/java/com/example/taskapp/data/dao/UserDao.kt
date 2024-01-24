@@ -8,14 +8,17 @@ import com.example.taskapp.data.entity.User
 @Dao
 interface UserDao {
     @Insert
-    fun insertUser(user:User)
+    suspend fun insertUser(user:User):Long
 
     @Query("DELETE FROM user WHERE uid = :uid")
-    fun deleteUser(uid:Int)
+    suspend fun deleteUser(uid:Int)
 
     @Query("SELECT * FROM user WHERE uid = :uid")
-    fun getUser(uid:Int):User?
+    suspend fun getUserWithUid(uid:Int):User?
+
+    @Query("SELECT * FROM user WHERE email=:email")
+    suspend fun getUserWithEmail(email:String):User?
 
     @Query("SELECT * FROM user")
-    fun getAllUser():User?
+    suspend fun getAllUser():List<User>
 }

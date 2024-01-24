@@ -12,12 +12,10 @@ data class Task(
     @PrimaryKey(autoGenerate = true)
     val tid:Int,
 
-    val uid:Int,
+    val uid:Long,
 
-    @ColumnInfo(
-        name = "due_date"
-    )
-    val dueDate:LocalDateTime,
+    @ColumnInfo(name = "due_date")
+    val dueDate :LocalDateTime,
 
     val description:String
 )

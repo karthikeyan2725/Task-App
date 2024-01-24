@@ -11,7 +11,7 @@ import com.example.taskapp.data.entity.User
 
 @Database(entities = [User::class, Task::class],version = 1)
 @TypeConverters(DateTimeConverter::class)
-abstract class TaskDatabase:RoomDatabase() {
+abstract class TaskDatabase:RoomDatabase( ) {
     abstract fun userDao():UserDao
     abstract fun taskDao():TaskDao
 }

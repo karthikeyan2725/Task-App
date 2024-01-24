@@ -9,14 +9,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
     @Insert
-    fun insertTask(task: Task)
+    suspend fun insertTask(task: Task)
 
     @Query("DELETE FROM task WHERE tid = :tid")
-    fun deleteTask(tid:Int)
+    suspend fun deleteTask(tid:Int)
 
     @Query("SELECT * from task WHERE uid=:uid")
     fun getTasksOf(uid:Int): Flow<List<Task>>
 
     @Query("SELECT * FROM task")
-    fun getAllTasks():List<Task>
+    suspend fun getAllTasks():List<Task>
 }

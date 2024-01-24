@@ -9,13 +9,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.example.taskapp.data.database.TaskDatabase
 import com.example.taskapp.data.entity.Task
 import com.example.taskapp.data.entity.User
+import com.example.taskapp.domain.UserViewModel
+import com.example.taskapp.presentation.AddTaskPage
+import com.example.taskapp.presentation.LoginPage
+import com.example.taskapp.presentation.SignUpPage
+import com.example.taskapp.presentation.TaskPage
 import com.example.taskapp.presentation.ui.theme.TaskAppTheme
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -24,34 +37,12 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 const val mainTag= "taskApp:main"
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val db = Room.databaseBuilder(
-            applicationContext,
-            TaskDatabase::class.java,
-            "task_database"
-        ).build()
-        runBlocking {
-            launch (Dispatchers.IO){
-                /*
-                db.userDao().insertUser(User(
 
-                    uid=0,
-                    password = "hola",
-                    email = "jumpy"
-                ))
-                Log.d(mainTag, db.userDao().getAllUser().toString())
-                 */
-                db.taskDao().insertTask(Task(
-                    tid=0,
-                    uid=1,
-                    dueDate = LocalDateTime.ofEpochSecond(1705559483,0, ZoneOffset.UTC),
-                    description = "Bath"
-                ))
-                Log.d(mainTag,db.taskDao().getAllTasks().toString())
-            }
-        }
         setContent {
             TaskAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -59,7 +50,35 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
+                    val userViewModel = hiltViewModel<UserViewModel>()
+                    val navController = rememberNavController()
+                    val loggedIn = userViewModel.userState.collectAsState().value.loggedIn
+                    NavHost(navController=navController,startDestination = "AddTaskPage"){
+                        composable("LoginPage"){
+                            LoginPage(userViewModel = userViewModel) {
+                                navController.navigate("SignUpPage")
+                            }
+                            if(loggedIn){
+                                navController.navigate("TaskPage")
+                            }
+                        }
+                        composable("SignUpPage"){
+                            SignUpPage(userViewModel = userViewModel){
+                                navController.navigate("LoginPage")
+                            }
+                            if(loggedIn){
+                                navController.navigate("TaskPage")
+                            }
+                        }
+                        composable("TaskPage"){
+                            TaskPage(userViewModel){
+                                navController.navigate("AddTaskPage")
+                            }
+                        }
+                        composable("AddTaskPage"){
+                            AddTaskPage(userViewModel)
+                        }
+                    }
                 }
             }
         }
