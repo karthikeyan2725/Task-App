@@ -3,6 +3,8 @@ package com.example.taskapp.data.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
+import androidx.room.Upsert
 import com.example.taskapp.data.entity.Task
 import kotlinx.coroutines.flow.Flow
 
@@ -19,4 +21,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM task")
     suspend fun getAllTasks():List<Task>
+
+    @Upsert
+    suspend fun updateTask(task:Task)
 }

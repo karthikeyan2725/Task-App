@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
+import com.example.compose.TaskAppTheme
 import com.example.taskapp.data.database.TaskDatabase
 import com.example.taskapp.data.entity.Task
 import com.example.taskapp.data.entity.User
@@ -26,7 +27,6 @@ import com.example.taskapp.presentation.AddTaskPage
 import com.example.taskapp.presentation.LoginPage
 import com.example.taskapp.presentation.SignUpPage
 import com.example.taskapp.presentation.TaskPage
-import com.example.taskapp.presentation.ui.theme.TaskAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                     val userViewModel = hiltViewModel<UserViewModel>()
                     val navController = rememberNavController()
                     val loggedIn = userViewModel.userState.collectAsState().value.loggedIn
-                    NavHost(navController=navController,startDestination = "AddTaskPage"){
+                    NavHost(navController=navController,startDestination = "LoginPage"){
                         composable("LoginPage"){
                             LoginPage(userViewModel = userViewModel) {
                                 navController.navigate("SignUpPage")
@@ -76,7 +76,9 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         composable("AddTaskPage"){
-                            AddTaskPage(userViewModel)
+                            AddTaskPage(userViewModel){
+                                navController.popBackStack()
+                            }
                         }
                     }
                 }

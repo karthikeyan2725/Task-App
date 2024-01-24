@@ -14,6 +14,8 @@ data class Task(
 
     val uid:Long,
 
+    val done:Int,
+
     @ColumnInfo(name = "due_date")
     val dueDate :LocalDateTime,
 

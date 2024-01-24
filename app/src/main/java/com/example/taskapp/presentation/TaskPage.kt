@@ -41,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,6 +58,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,6 +70,7 @@ import com.example.taskapp.domain.viewTag
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 const val taskPageTag = "taskApp:taskPage"
 @Composable
@@ -101,8 +104,7 @@ fun TaskPage(
                 TaskRow(task,userViewModel)
             }
         }
-        AddTask({taskButtonClick()})
-        AddTask({taskButtonClick()})
+        AddTask { taskButtonClick() }
         //TempAdd(userViewModel = userViewModel)
     }
 }
@@ -112,7 +114,13 @@ fun TaskRow(task: Task,userViewModel: UserViewModel){
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CustomRadioButton({})
+        var taskCompleted by remember { mutableIntStateOf(task.done) }
+
+        CustomRadioButton(taskCompleted){
+            taskCompleted = (taskCompleted+1)%2
+            userViewModel.updateTask(task.copy(done = taskCompleted))
+            Log.d("taskApp:TaskPage","$task")
+        }
         TaskDate(task=task)
         TaskCard(task = task, userViewModel )
     }
@@ -120,9 +128,10 @@ fun TaskRow(task: Task,userViewModel: UserViewModel){
 
 @Composable
 fun CustomRadioButton(
+    taskCompleted:Int,
     onClick:()->Unit
 ){
-    var radioSelected by remember{ mutableStateOf(false) }
+    var radioSelected by remember{ mutableStateOf(taskCompleted==1) }
     Row(
         modifier = Modifier
             .padding(10.dp)
@@ -131,7 +140,10 @@ fun CustomRadioButton(
         Canvas(
             modifier = Modifier
                 .size(12.dp)
-                .clickable { radioSelected = !radioSelected }
+                .clickable {
+                    radioSelected = !radioSelected
+                    onClick()
+                }
         ){
 
 
@@ -165,6 +177,7 @@ fun WelcomeRow(name:String){
             Text("Hello,",
                 style = TextStyle(
                     color = Color.White,
+                    fontWeight = FontWeight.Medium,
                     fontSize = 24.sp,
 
                 ),
@@ -172,6 +185,7 @@ fun WelcomeRow(name:String){
             Text(name,
                 style = TextStyle(
                     color = Color.White,
+                    fontWeight = FontWeight.Bold,
                     fontSize=30.sp
                 )
             )
@@ -181,6 +195,7 @@ fun WelcomeRow(name:String){
 
 @Composable
 fun TaskCard(task:Task,userViewModel: UserViewModel){
+    var taskDueIn2Days = isWithinTwoDays(task.dueDate)
     Card(
         colors= CardDefaults.cardColors(
             containerColor = Color.White
@@ -189,15 +204,33 @@ fun TaskCard(task:Task,userViewModel: UserViewModel){
         modifier = Modifier.padding(8.dp)
     ) {
 
-        //Description Text
+        var dateColor = when(taskDueIn2Days){
+            true-> Color(0xFFA09B9B)
+            false-> Color.Red
+        }
+
+        //Description Text and delete
         Row(
-            modifier = Modifier.padding(12.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
         ) {
             Text(text = task.description,
                 fontSize = 16.sp,
-                color = Color(0xFF676767),
+                color =Color(0xFF676767),
                 fontWeight = FontWeight(600)
             )
+            if(!taskDueIn2Days) {
+                Text(
+                    text = "!",
+                    fontSize = 16.sp,
+                    color = Color.Red,
+                    fontWeight = FontWeight(600),
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                )
+            }
         }
 
         //Time and Delete
@@ -209,7 +242,7 @@ fun TaskCard(task:Task,userViewModel: UserViewModel){
         ) {
             Text(
                 task.dueDate.format(DateTimeFormatter.ofPattern("KK:mm a")),
-                color = Color(0xFFA09B9B)
+                color = dateColor
             )
 
             Icon(
@@ -292,4 +325,9 @@ fun AddTaskButton(userViewModel:UserViewModel,taskString:String){
     }) {
         Text("Add Task")
     }
+}
+
+fun isWithinTwoDays(dueDateTime: LocalDateTime): Boolean {
+    val minDue = dueDateTime.minusDays(2)
+    return minDue > LocalDateTime.now()
 }

@@ -89,6 +89,7 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
                     tid=0,
                     uid= _userState.value.uid ?:0,
                     description = description,
+                    done = 0,
                     dueDate = dueDate
                 )
             )
@@ -110,6 +111,12 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
                 Log.d(viewTag,"STATE: ${userState.value}")
                 Log.d(viewTag,"USERS: ${db.userDao().getAllUser()}")
             }
+        }
+    }
+
+    fun updateTask(task: Task){
+        viewModelScope.launch(Dispatchers.IO) {
+            db.taskDao().updateTask(task)
         }
     }
 }
