@@ -61,6 +61,7 @@ fun SignUpPage(userViewModel: UserViewModel,onClick:()->Unit){
             stateAttribute = "password",
             fieldValue = userState.value.password?:"",
             userViewModel = userViewModel ,
+            isPassword = true,
             modifier = spacerModifier
         )
 

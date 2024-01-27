@@ -14,6 +14,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.ImeOptions
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskapp.domain.UserViewModel
@@ -51,6 +55,7 @@ fun LoginPage(
             stateAttribute = "password",
             fieldValue = userState.value.password?:"",
             userViewModel = userViewModel ,
+            isPassword = true,
             modifier = spacerModifier
         )
 
@@ -77,13 +82,15 @@ fun EditableField(
     stateAttribute : String,
     fieldValue : String,
     userViewModel:UserViewModel,
+    isPassword:Boolean = false,
     modifier: Modifier
 ){
     Column() {
         LoginLabel(string = label)
         OutlinedTextField(
             value = fieldValue,
-            onValueChange = { userViewModel.updateState(stateAttribute, it) }
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            onValueChange = { userViewModel.updateState(stateAttribute, it) },
         )
     }
     Spacer(modifier = modifier)

@@ -248,7 +248,7 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
                         modifier = editableRowModifier
                     ) {
                         Text(
-                            text = selectedDate.format(DateTimeFormatter.ofPattern("DD/MM/yyyy"))
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                         )
                         Icon(
                             imageVector = Icons.Filled.DateRange,
