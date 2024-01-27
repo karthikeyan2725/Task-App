@@ -1,23 +1,37 @@
 package com.example.taskapp.presentation
 
+import android.content.res.Resources.Theme
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,12 +52,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.taskapp.R
 import com.example.taskapp.data.entity.Task
 import com.example.taskapp.domain.UserViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 const val taskPageTag = "taskApp:taskPage"
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskPage(
     userViewModel: UserViewModel,
@@ -59,6 +75,20 @@ fun TaskPage(
     //Styling Variables
     val bluishColor = Color(0xFF5F95FF)
     val circleCenterFraction  = 4F/ 3F
+
+    //Modal State
+    var isModalStateVisible by remember {
+        mutableStateOf(false)
+    }
+    var selectedTask by remember {
+        mutableStateOf(Task(
+            tid = 0,
+            uid = userViewModel.userState.value.uid ?:0,
+            done = false,
+            dueDate = LocalDateTime.now(),
+            description = ""
+        ))
+    }
 
     Column(
         //Background blue Circle
@@ -84,7 +114,10 @@ fun TaskPage(
         ){
             items(tasks){task->
                 // A single Task row with done, Date and TaskCard
-                TaskRow(task,userViewModel,navigateOnClickOfCard)
+                TaskRow(task,userViewModel) {
+                    isModalStateVisible = !isModalStateVisible
+                    selectedTask = task
+                }
             }
         }
 
@@ -94,7 +127,63 @@ fun TaskPage(
             buttonColor = bluishColor,
             modifier = Modifier.fillMaxWidth()
         )
+
+        if(isModalStateVisible){
+            ModalBottomSheet(
+                onDismissRequest = {
+                    isModalStateVisible = !isModalStateVisible},
+            ) {
+                var description by remember { mutableStateOf(selectedTask.description)}
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    Row() {
+                        Column() {
+                            Text(
+                                "Edit Task Description",
+                                style = TextStyle(
+                                    fontSize = 15.sp,
+                                    color = Color.Gray
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = description,
+                                    onValueChange = { description = it }
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                IconButton(
+                                    onClick = {
+                                        isModalStateVisible = false
+                                        userViewModel.updateTask(
+                                            selectedTask.copy(
+                                                description = description
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier.border(
+                                        1.dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape
+                                    )
+                                ) {
+                                    Icon(Icons.Default.Check, contentDescription = "Update Task")
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
     }
+
 }
 
 

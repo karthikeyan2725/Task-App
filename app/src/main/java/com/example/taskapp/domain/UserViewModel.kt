@@ -30,6 +30,7 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
     val userState = _userState.asStateFlow()
     private val _tasks = MutableStateFlow(listOf<Task>())
     val tasks = _tasks.asStateFlow()
+
     fun updateState(
       attribute:String,
       value:String
