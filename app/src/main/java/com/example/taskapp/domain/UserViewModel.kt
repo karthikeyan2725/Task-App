@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import javax.annotation.meta.When
 import javax.inject.Inject
 
 const val viewTag = "taskApp:ViewModel"
@@ -30,7 +31,8 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
     val userState = _userState.asStateFlow()
     private val _tasks = MutableStateFlow(listOf<Task>())
     val tasks = _tasks.asStateFlow()
-
+    private val _sortType = MutableStateFlow(SortType.INS)
+    val sortType = _sortType.asStateFlow()
     fun updateState(
       attribute:String,
       value:String
@@ -57,7 +59,7 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
                                 currState.copy(uid=user.uid.toLong())
                             }
                             updateState("loggedIn","true")
-                            startCollectingTasks()
+                            collectTasksToggle()
                         }
                     }
             }
@@ -79,7 +81,7 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
                 it.copy(uid=uid)
             }
             updateState("loggedIn","true")
-            startCollectingTasks()
+            collectTasksToggle()
         }
     }
 
@@ -103,14 +105,19 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
         }
     }
 
-    private fun startCollectingTasks(){
+    fun collectTasksToggle(){
+
+        _sortType.value = toggleNextSortType(_sortType.value)
         viewModelScope.launch(Dispatchers.IO){
-            db.taskDao().getTasksOf(_userState.value.uid?.toInt()?:0).collect{allTasks->
+            db.taskDao().let {
+                when(_sortType.value){
+                    SortType.ASC -> it.getTasksOrderedByDateAsc(_userState.value.uid?.toInt()?:0)
+                    SortType.DEC -> it.getTasksOrderedByDateDesc(_userState.value.uid?.toInt()?:0)
+                    SortType.INS ->  it.getTasksOf(_userState.value.uid?.toInt()?:0)
+                }
+            }.collect{allTasks->
+                Log.d(viewTag,"TASKS SORT TOGGLED: ${_sortType.value.name}")
                 _tasks.value = allTasks
-                Log.d(viewTag,"TASKS: $allTasks")
-                Log.d(viewTag,"UID: ${_userState.value.uid}")
-                Log.d(viewTag,"STATE: ${userState.value}")
-                Log.d(viewTag,"USERS: ${db.userDao().getAllUser()}")
             }
         }
     }
@@ -119,5 +126,19 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             db.taskDao().updateTask(task)
         }
+    }
+}
+
+enum class SortType{
+    INS,
+    ASC,
+    DEC
+}
+
+fun toggleNextSortType(sortType:SortType) : SortType{
+    return when(sortType){
+        SortType.INS -> SortType.ASC
+        SortType.ASC -> SortType.DEC
+        SortType.DEC -> SortType.INS
     }
 }

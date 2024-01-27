@@ -19,6 +19,12 @@ interface TaskDao {
     @Query("SELECT * from task WHERE uid=:uid")
     fun getTasksOf(uid:Int): Flow<List<Task>>
 
+    @Query("SELECT * from task WHERE uid=:uid ORDER BY due_date ASC")
+    fun getTasksOrderedByDateAsc(uid:Int): Flow<List<Task>>
+
+    @Query("SELECT * from task WHERE uid=:uid ORDER BY due_date DESC")
+    fun getTasksOrderedByDateDesc(uid:Int): Flow<List<Task>>
+
     @Query("SELECT * FROM task")
     suspend fun getAllTasks():List<Task>
 

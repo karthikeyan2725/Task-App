@@ -46,6 +46,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskapp.R
 import com.example.taskapp.data.entity.Task
+import com.example.taskapp.domain.SortType
 import com.example.taskapp.domain.UserViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -64,7 +67,6 @@ const val taskPageTag = "taskApp:taskPage"
 fun TaskPage(
     userViewModel: UserViewModel,
     navigateOnClick: ()->Unit,
-    navigateOnClickOfCard: () -> Unit
 ) {
 
     //States and collections
@@ -102,9 +104,15 @@ fun TaskPage(
                 )
             }
     ){
-
+        val sortState = userViewModel.sortType.collectAsState()
         //Hello-Name Row
-        HelloUserRow(userName)
+        HelloUserRow(
+            userName,
+            sortType = sortState.value,
+            sortButtonClick = {
+                userViewModel.collectTasksToggle()
+            }
+        )
 
         //Tasks List
         LazyColumn(
@@ -284,9 +292,17 @@ fun TaskRadioButton(
 }
 
 @Composable
-fun HelloUserRow(name:String){
+fun HelloUserRow(
+    name:String,
+    sortType: SortType,
+    sortButtonClick : () -> Unit
+){
     Row(
-        modifier = Modifier.padding(8.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
     ){
         Column{
             Text(
@@ -307,6 +323,16 @@ fun HelloUserRow(name:String){
                 )
             )
         }
+        Button(
+            onClick = {sortButtonClick()}
+        ){
+            when(sortType){
+                SortType.INS -> Text("INS")
+                SortType.DEC -> Text("DEC")
+                SortType.ASC -> Text("ASC")
+            }
+        }
+
     }
 }
 
