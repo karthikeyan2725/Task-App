@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -37,8 +39,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,18 +58,26 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskPage(userViewModel: UserViewModel,addClick:()->Unit) {
-    Box(
+    val radiusDenominator = 1.5F
+    val centerXFraction = 1/2F
+    val centerYFraction = 8/7F
+    val bluishColor = Color(0xFF5F95FF)
+    val bgCircleColor = Color.White
+    val columnModifier = Modifier.fillMaxWidth()
+    Column(
         modifier = Modifier
-            .background(Color(0xFF5F95FF))
+            .background(bluishColor)
             .drawBehind {
                 //Background White Circle
                 drawCircle(
-                    color = Color.White,
-                    radius = size.width / (1.5F),
-                    center = Offset(size.width / 2, size.height*(4/3))
+                    color = bgCircleColor,
+                    radius = size.width / radiusDenominator,
+                    center = Offset(
+                        size.width * centerXFraction,
+                        size.height * centerYFraction
+                    )
                 )
             }
     ){
@@ -73,42 +86,80 @@ fun AddTaskPage(userViewModel: UserViewModel,addClick:()->Unit) {
             modifier = Modifier
                 .padding(10.dp)
         ){
-            Icon(Icons.Filled.ArrowBack,
+            Icon(
+                Icons.Filled.ArrowBack,
                 tint = Color.White,
                 contentDescription = "Go Back To Tasks",
-                modifier = Modifier.clickable {addClick() }
-                )
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable {addClick() }
+            )
         }
 
         Column(
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = columnModifier
         ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ){
-                Text("\"Plan Your Work, and",
-                    fontWeight = FontWeight(700),
-                    fontSize = 30.sp,
-                    color = Color.White
-                )
 
-                Text("work your plan\"",
-                    fontWeight = FontWeight(650),
-                    fontSize = 24.sp,
-                    color = Color.White
+            QuoteRows(
+                firstLine = "\"Plan Your Work, and",
+                secondLine = "work your plan\"",
+                modifier = columnModifier
 
-                )
-            }
+            )
+
             Spacer(modifier = Modifier.height(20.dp))
+
             TaskEditCard(userViewModel, addClick = addClick)
         }
     }
 }
+
+
+
+
+
+
+
+
+@Composable
+fun QuoteRows(
+    firstLine : String,
+    secondLine : String,
+    modifier : Modifier,
+    shadowStyle :TextStyle = TextStyle(
+        shadow = Shadow(
+            color = Color.Black,
+            offset = Offset(10F,10F)
+        )
+    )
+){
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+
+    ){
+
+        Text(
+            text = firstLine,
+            fontWeight = FontWeight(700),
+            fontSize = 30.sp,
+            color = Color.White,
+            style = shadowStyle
+        )
+
+        Text(
+            text = secondLine,
+            fontWeight = FontWeight(650),
+            fontSize = 24.sp,
+            color = Color.White,
+            style = shadowStyle
+        )
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,16 +172,15 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
     val iconModifier = Modifier
         .fillMaxWidth()
 
-    var dateString by remember { mutableStateOf("12/01/2023") }
-    var timeString by remember { mutableStateOf("12:00 PM") }
-
-    //Description Part
+    //Description String
     var taskDescription by remember { mutableStateOf("") }
 
-    //Calendar part
-    var calendarState = rememberSheetState()
-    var clockState = rememberSheetState()
+    //Calendar
+    val calendarState = rememberSheetState()
     var selectedDate by remember {mutableStateOf(LocalDate.now())}
+
+    //Time
+    val clockState = rememberSheetState()
     var selectedTime by remember { mutableStateOf(LocalTime.now()) }
 
     CalendarDialog(
@@ -179,6 +229,7 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
                         value = taskDescription,
                         onValueChange = { taskDescription = it },
                         modifier = modifier
+                            .fillMaxWidth()
                     )
                 }
 
@@ -200,7 +251,7 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
                             text = selectedDate.format(DateTimeFormatter.ofPattern("DD/MM/yyyy"))
                         )
                         Icon(
-                            imageVector = Icons.Filled.Edit,
+                            imageVector = Icons.Filled.DateRange,
                             tint = Color(0xFF5F95FF),
                             contentDescription = "",
                             modifier = iconModifier
@@ -210,7 +261,7 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
 
                     //Edit Due Time Of Task
                     EditableLabel(
-                        label = "Due Date",
+                        label = "Due Time",
                         modifier = textModifier
                     )
                     Row(
@@ -258,7 +309,7 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
                             fontSize = 16.sp,
                             fontWeight = FontWeight(800),
                             modifier = Modifier
-                                .padding(vertical = 10.dp, horizontal = 30.dp)
+                                .padding(vertical = 10.dp, horizontal = 20.dp)
                         )
                     }
                 }
@@ -266,6 +317,7 @@ fun TaskEditCard(userViewModel: UserViewModel,modifier:Modifier = Modifier,addCl
         }
     }
 }
+
 
 @Composable
 fun EditableLabel(label:String,modifier: Modifier){

@@ -37,44 +37,37 @@ fun SignUpPage(userViewModel: UserViewModel,onClick:()->Unit){
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        Column(
-            loginEntryModifier
-        ){
-            LoginLabel(string = "Name")
-            OutlinedTextField(
-                value = userState.value.name ?:"",
-                onValueChange = {userViewModel.updateState("name",it)}
-            )
-        }
+        //Name Field
+        EditableField(
+            label = "Name",
+            stateAttribute = "name",
+            fieldValue = userState.value.name?:"",
+            userViewModel = userViewModel ,
+            modifier = spacerModifier
+        )
 
-        Spacer(modifier = spacerModifier)
+        // Email Field
+        EditableField(
+            label = "Email",
+            stateAttribute = "email",
+            fieldValue = userState.value.email?:"",
+            userViewModel = userViewModel ,
+            modifier = spacerModifier
+        )
 
-        Column(
-            loginEntryModifier
+        // Password Field
+        EditableField(
+            label = "Password",
+            stateAttribute = "password",
+            fieldValue = userState.value.password?:"",
+            userViewModel = userViewModel ,
+            modifier = spacerModifier
+        )
+
+
+        Button(
+            onClick = {userViewModel.signUpUser()}
         ) {
-            LoginLabel(string = "Email")
-            OutlinedTextField(
-                value = userState.value.email ?: "",
-                onValueChange = { userViewModel.updateState("email", it) }
-            )
-        }
-
-        Spacer(modifier = spacerModifier)
-
-        Column(
-            loginEntryModifier
-        ) {
-            LoginLabel(string = "Password")
-            OutlinedTextField(
-                value = userState.value.password ?: "",
-                onValueChange = { userViewModel.updateState("password", it) }
-            )
-        }
-
-        Spacer(modifier = spacerModifier)
-
-
-        Button(onClick = {userViewModel.signUpUser()}) {
             Text("Sign Up")
         }
 
@@ -82,8 +75,6 @@ fun SignUpPage(userViewModel: UserViewModel,onClick:()->Unit){
             text = "Login Instead",
             modifier = Modifier.clickable { onClick() }
         )
-
-
     }
 }
 

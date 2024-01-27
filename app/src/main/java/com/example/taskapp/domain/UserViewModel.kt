@@ -89,7 +89,7 @@ class UserViewModel @Inject constructor(val db:TaskDatabase) :ViewModel() {
                     tid=0,
                     uid= _userState.value.uid ?:0,
                     description = description,
-                    done = 0,
+                    done = false,
                     dueDate = dueDate
                 )
             )

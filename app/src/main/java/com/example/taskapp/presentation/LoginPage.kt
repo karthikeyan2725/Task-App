@@ -30,43 +30,63 @@ fun LoginPage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){
+        // Login Page Title
         Text(text = "Login",
             fontSize = 30.sp,
             fontWeight = FontWeight(800)
         )
-
         Spacer(modifier = Modifier.height(40.dp))
-        Column() {
-            LoginLabel(string = "Email")
-            OutlinedTextField(
-                value = userState.value.email ?: "",
-                onValueChange = { userViewModel.updateState("email", it) }
-            )
-        }
 
-        Spacer(modifier = spacerModifier)
-        Column() {
-            LoginLabel(string = "Password")
-            OutlinedTextField(
-                value = userState.value.password ?: "",
-                onValueChange = { userViewModel.updateState("password", it) }
-            )
-        }
+        // Email Field
+        EditableField(
+            label = "Email",
+            stateAttribute = "email",
+            fieldValue = userState.value.email?:"",
+            userViewModel = userViewModel ,
+            modifier = spacerModifier
+        )
 
-        Spacer(modifier = spacerModifier)
+        EditableField(
+            label = "Password",
+            stateAttribute = "password",
+            fieldValue = userState.value.password?:"",
+            userViewModel = userViewModel ,
+            modifier = spacerModifier
+        )
 
-        Button(onClick = { userViewModel.loginUser() }) {
+
+        // Login button
+        Button(
+            onClick = { userViewModel.loginUser() }
+        ) {
             Text("Login")
         }
-
         Spacer(modifier = spacerModifier)
 
+        // Sign up Option text
         Text(
             text = "No Account, Sign Up Instead",
             modifier = Modifier.clickable { onclick() }
         )
-
     }
+}
+
+@Composable
+fun EditableField(
+    label : String,
+    stateAttribute : String,
+    fieldValue : String,
+    userViewModel:UserViewModel,
+    modifier: Modifier
+){
+    Column() {
+        LoginLabel(string = label)
+        OutlinedTextField(
+            value = fieldValue,
+            onValueChange = { userViewModel.updateState(stateAttribute, it) }
+        )
+    }
+    Spacer(modifier = modifier)
 }
 
 @Composable

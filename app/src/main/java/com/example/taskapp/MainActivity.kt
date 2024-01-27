@@ -71,9 +71,10 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         composable("TaskPage"){
-                            TaskPage(userViewModel){
-                                navController.navigate("AddTaskPage")
-                            }
+                            TaskPage(userViewModel,
+                                navigateOnClick = {navController.navigate("AddTaskPage")},
+                                navigateOnClickOfCard = {}
+                            )
                         }
                         composable("AddTaskPage"){
                             AddTaskPage(userViewModel){
